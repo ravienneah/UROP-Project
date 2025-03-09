@@ -1,15 +1,29 @@
 ---
 title: "Ravienne UROP - Zoe's Code"
-date: 
-output: html_notebook
+author: 'Zoe'
+date: "`r Sys.Date()`"
+output: 
+  html_notebook
+header-includes:
+- \usepackage{fvextra}
+- \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
 ---
 
-```{r echo=FALSE}
-library(tidyverse)
-```
+> *Hi Ravienne! This is an R Notebook document. You don't have to use this format, but I like to! R Notebook is basically a way of presenting your code in a final document which is easier to read and can be easily edited within R.*
 
-```{r echo=FALSE}
-#loading data locally
+#### Loading packages 
+```{r echo=T ,include=T}
+library(tidyverse) # includes dplyr
+library(forcats) # i added this bc i was having trouble with factors
+```
+tidyverse - includes dplyr
+
+
+forcats - i added this bc i was having trouble with factors
+
+
+#### Here's where I loaded my data locally
+```{r echo=TRUE,include=T}
 load(
   "~/Desktop/QPL/urop_ravienne/ICPSR UROP Data/ICPSR_21600 4/DS0005/21600-0005-Data.rda"
 )
@@ -20,9 +34,79 @@ load(
   "~/Desktop/QPL/urop_ravienne/ICPSR UROP Data/ICPSR_21600 8/DS0022/21600-0022-Data.rda"
 )
 ```
-## **Zoe's first edit of code (tweaking code style + resolving error messages)**
 
-1)  selecting the variables from each wave and organizing them
+## **Ravienne's code as of 03/09/25**
+#### *will not evaluate in knitted doc*
+
+```{r echo=TRUE, include=T, eval = FALSE}
+#selecting the variables from each wave and organizing them
+library(dplyr)
+w1vars <- da21600.0001 %>% select(AID, H1TO12, H1TO17)
+w2vars <- da21600.0005 %>% select(AID, H2ED19, H2ED17, H2PR1, H2PR2, H2PR3, H2PR4)
+w4vars <- da21600.0022 %>% select(
+  AID,
+  H4MA1,
+  H4MA3,
+  H4MA5,
+  H4TO51,
+  H4TO58,
+  H4TO46,
+  H4TO48,
+  H4TO52,
+  H4TO47,
+  H4TO53,
+  H4TO54,
+  H4TO55,
+  H4TO56,
+  H4TO59,
+  H4TO60,
+  H4TO61,
+  H4TO62
+)
+
+#merging the variables by AID
+merg1 <- merge(w1vars, w2vars, by = "AID")
+merg2 <- merge(merg1, w4vars, by = "AID")
+
+#use dplyr function mutate to combine variables from subvariables e.g. ACEs
+
+#aces
+merg2$emotional_abuse <- as.numeric(merg2$H4MA1 == "(5) (5) More than ten times")
+merg2$physical_abuse <- as.numeric(
+  merg2$H4MA3 == "(3) (3) Three to five times" |
+    merg2$H4MA3 == "(4) (4) Six to ten times" |
+    merg2$H4MA3 == "(5) (5) More than ten times"
+)
+merg2$sexual_abuse <- as.numeric(merg2$H4MA5 != "(6) (6) This has never happened")
+merg2 <- merg2 %>% mutate(aces = emotional_abuse + physical_abuse + sexual_abuse)
+
+#early life substance use
+merg2$early_life_alc_use <- as.numeric(merg2$H1TO12 == "(1) (1) Yes")
+merg2$early_life_heavy_drinking <- levels(merg2$H1TO17) <- c(6, 5, 4, 3, 2, 1, 0)
+merg2 <- merg2 %>% mutate(early_life_subst_use = early_life_alc_use + early_life_heavy_drinking)
+
+#problematic substance use - create a manual diagnosis variable and send dr liu the codebooks
+
+
+#perceived discriminiation
+merg2$teacher_discrimination <- levels(merg2$H2ED19) = c(1, 2, 3, 4, 5)
+merg2$peer_prejudice <- levels(merg2$H2ED17) = c(5, 4, 3, 2, 1)
+merg2 <- merg2 %>% mutate(perceived_discrimination = teacher_discrimination + peer_prejudice)
+
+#perceived social support
+merg2$adult_support <- levels(merg2$H2PR1) = c(1, 2, 3, 4, 5)
+merg2$teacher_support <- levels(merg2$H2PR2) = c(1, 2, 3, 4, 5)
+merg2$parent_support <- levels(merg2$H2PR3) = c(1, 2, 3, 4, 5)
+merg2$peer_support <- levels(merg2$H2PR4) = c(1, 2, 3, 4, 5)
+merg2 <- merg2 %>% mutate(perceived_social_support = adult_support + teacher_support + parent_support + peer_support)
+```
+
+---
+
+## **Zoe's first edit of code (tweaked code style + resolved errors)**
+Pro tip! pressing control/command if you have a mac + shift + the a key will reformat your code to make it easier to read :) That was the thing only I tweaked about R's code above <33
+
+### Step 1:selecting the variables from each wave and organizing them
 
 ```{r}
 #wave 1 variables
@@ -59,7 +143,7 @@ data_wave4 <- da21600.0022 |>
   )
 ```
 
-2)  merging the variables by AID
+### Step 2:  merging the variables by AID
 ```{r}
 data_waves1and2 <- merge(
   data_wave1, 
@@ -73,7 +157,8 @@ data_waves124 <- merge(
   )
 ```
 
-3)  use dplyr function mutate to combine variables from subvariables e.g. ACEs
+### Step 3: Using the dplyr function mutate to combine variables from subvariables e.g. ACEs
+
 ```{r}
 #aces :
 data_waves124$emotional_abuse <- as.numeric(data_waves124$H4MA1 == "(5) (5) More than ten times")
@@ -93,9 +178,10 @@ data_waves124 <- data_waves124 |>
 #problematic substance use - create a manual diagnosis variable and send dr liu the codebooks
 ```
 
+### Still Step 3: These ones are a bit more complicated, so they get their own chunk
 ```{r}
 # Ensure factor levels are correctly defined
-data_waves124 <- data_waves124 %>%
+data_waves124 <- data_waves124 |>
   mutate(
     H1TO17 = factor(H1TO17, levels = c("(0) (0) Never", "(1) (1) Every day/almost every day", 
                                        "(2) (2) 2 or 3 days/week", "(3) (3) 1 or 2 days/week", 
@@ -118,7 +204,7 @@ data_waves124 <- data_waves124 %>%
   )
 
 # Early life substance use
-data_waves124 <- data_waves124 %>%
+data_waves124 <- data_waves124 |>
   mutate(
     early_life_alc_use = as.numeric(H1TO12 == "(1) (1) Yes"),
     early_life_heavy_drinking = as.numeric(fct_recode(H1TO17,
@@ -135,7 +221,7 @@ data_waves124 <- data_waves124 %>%
   )
 
 # Perceived discrimination
-data_waves124 <- data_waves124 %>%
+data_waves124 <- data_waves124 |>
   mutate(
     teacher_discrimination = as.numeric(fct_recode(H2ED19, 
       `1` = "(1) (1) Strongly agree", 
@@ -157,7 +243,7 @@ data_waves124 <- data_waves124 %>%
   )
 
 # Perceived social support
-data_waves124 <- data_waves124 %>%
+data_waves124 <- data_waves124 |>
   mutate(
     adult_support = as.numeric(fct_recode(H2PR1, 
       `1` = "(1) (1) Not at all", 
@@ -193,9 +279,25 @@ data_waves124 <- data_waves124 %>%
     peer_support = ifelse(is.na(peer_support), 0, peer_support),
     perceived_social_support = adult_support + teacher_support + parent_support + peer_support
   )
+```
 
+### Step 4: Check that the composites were created successfully
 
-# Inspect data after creating composite variables
+```{r,eval=F,include=T}
 summary(data_waves124)
+```
+
+## Some tables to preview the composite variables we made :)
+
+```{r,echo=F,include=TRUE}
+# Extract the data for display
+display_composites1 <- head(data_waves124[, c(1, 27:31)])
+display_composites2 <- head(data_waves124[, c(1, 32:36)])
+display_composites3 <- head(data_waves124[, c(1, 37:41)])
+
+# Use knitr::kable to create a table
+knitr::kable(display_composites1)
+knitr::kable(display_composites2)
+knitr::kable(display_composites3)
 ```
 
