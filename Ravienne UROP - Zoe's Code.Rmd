@@ -160,28 +160,6 @@ data_waves124$physical_abuse <- as.numeric(
 data_waves124$sexual_abuse <- as.numeric(data_waves124$H4MA5 != "(6) (6) This has never happened")
 data_waves124 <- data_waves124 |>
   mutate(aces = emotional_abuse + physical_abuse + sexual_abuse)
-
-#early life substance use :
-data_waves124$early_life_alc_use <- as.numeric(
-  data_waves124$H1TO12 == "(1) (1) Yes")
-data_waves124$H1TO17 <- factor(
-  data_waves124$H1TO17,
-  levels = c(
-    "(6) (6)",
-    "(5) (5)",
-    "(4) (4)",
-    "(3) (3)",
-    "(2) (2)",
-    "(1) (1)",
-    "(0) (0)"
-  )
-)
-data_waves124$early_life_heavy_drinking <- as.numeric(
-  levels(
-    data_waves124$H1TO17
-    ))[data_waves124$H1TO17]
-data_waves124 <- data_waves124 |> 
-  mutate(early_life_subst_use = early_life_alc_use + early_life_heavy_drinking)
 ```
 
 ```{r}
@@ -189,29 +167,108 @@ data_waves124 <- data_waves124 |>
 ```
 
 ```{r}
-#perceived discriminiation
-data_waves124$H2ED19 <- factor(data_waves124$H2ED19,
-                               levels = c("(1) (1)", "(2) (2)", "(3) (3)", "(4) (4)", "(5) (5)"))
-data_waves124$teacher_discrimination <- as.numeric(levels(data_waves124$H2ED19))[data_waves124$H2ED19]
-data_waves124$H2ED17 <- factor(data_waves124$H2ED17,
-                               levels = c("(5) (5)", "(4) (4)", "(3) (3)", "(2) (2)", "(1) (1)"))
-data_waves124$peer_prejudice <- as.numeric(levels(data_waves124$H2ED17))[data_waves124$H2ED17]
-data_waves124 <- data_waves124 %>% mutate(perceived_discrimination =
-                                            teacher_discrimination + peer_prejudice)
+# Ensure factor levels are correctly defined
+data_waves124 <- data_waves124 %>%
+  mutate(
+    H1TO17 = factor(H1TO17, levels = c("(0) (0) Never", "(1) (1) Every day/almost every day", 
+                                       "(2) (2) 2 or 3 days/week", "(3) (3) 1 or 2 days/week", 
+                                       "(4) (4) 2 or 3 days/month", "(5) (5) Once a month or less (3-12 times in past 12 months)", 
+                                       "(6) (6) 1 or 2 days in past 12 months", "(7) (7) Never")),
+    H2ED19 = factor(H2ED19, levels = c("(1) (1) Strongly agree", "(2) (2) Agree", 
+                                       "(3) (3) Neither agree nor disagree", "(4) (4) Disagree", 
+                                       "(5) (5) Strongly disagree")),
+    H2ED17 = factor(H2ED17, levels = c("(1) (1) Strongly agree", "(2) (2) Agree", 
+                                       "(3) (3) Neither agree nor disagree", "(4) (4) Disagree", 
+                                       "(5) (5) Strongly disagree")),
+    H2PR1 = factor(H2PR1, levels = c("(1) (1) Not at all", "(2) (2) Very little", 
+                                     "(3) (3) Somewhat", "(4) (4) Quite a bit", "(5) (5) Very much")),
+    H2PR2 = factor(H2PR2, levels = c("(1) (1) Not at all", "(2) (2) Very little", 
+                                     "(3) (3) Somewhat", "(4) (4) Quite a bit", "(5) (5) Very much")),
+    H2PR3 = factor(H2PR3, levels = c("(1) (1) Not at all", "(2) (2) Very little", 
+                                     "(3) (3) Somewhat", "(4) (4) Quite a bit", "(5) (5) Very much")),
+    H2PR4 = factor(H2PR4, levels = c("(1) (1) Not at all", "(2) (2) Very little", 
+                                     "(3) (3) Somewhat", "(4) (4) Quite a bit", "(5) (5) Very much"))
+  )
 
-#perceived social support
-data_waves124$H2PR1 <- factor(data_waves124$H2PR1,
-                              levels = c("(1) (1)", "(2) (2)", "(3) (3)", "(4) (4)", "(5) (5)"))
-data_waves124$adult_support <- as.numeric(levels(data_waves124$H2PR1))[data_waves124$H2PR1]
-data_waves124$H2PR2 <- factor(data_waves124$H2PR2,
-                              levels = c("(1) (1)", "(2) (2)", "(3) (3)", "(4) (4)", "(5) (5)"))
-data_waves124$teacher_support <- as.numeric(levels(data_waves124$H2PR2))[data_waves124$H2PR2]
-data_waves124$H2PR3 <- factor(data_waves124$H2PR3,
-                              levels = c("(1) (1)", "(2) (2)", "(3) (3)", "(4) (4)", "(5) (5)"))
-data_waves124$parent_support <- as.numeric(levels(data_waves124$H2PR3))[data_waves124$H2PR3]
-data_waves124$H2PR4 <- factor(data_waves124$H2PR4,
-                              levels = c("(1) (1)", "(2) (2)", "(3) (3)", "(4) (4)", "(5) (5)"))
-data_waves124$peer_support <- as.numeric(levels(data_waves124$H2PR4))[data_waves124$H2PR4]
-data_waves124 <- data_waves124 %>% mutate(perceived_social_support = adult_support + teacher_support + parent_support + peer_support)
+# Early life substance use
+data_waves124 <- data_waves124 %>%
+  mutate(
+    early_life_alc_use = as.numeric(H1TO12 == "(1) (1) Yes"),
+    early_life_heavy_drinking = as.numeric(fct_recode(H1TO17,
+      `6` = "(6) (6) 1 or 2 days in past 12 months", 
+      `5` = "(5) (5) Once a month or less (3-12 times in past 12 months)", 
+      `4` = "(4) (4) 2 or 3 days/month", 
+      `3` = "(3) (3) 1 or 2 days/week", 
+      `2` = "(2) (2) 2 or 3 days/week", 
+      `1` = "(1) (1) Every day/almost every day", 
+      `0` = "(0) (0) Never"
+    )),
+    early_life_heavy_drinking = ifelse(is.na(early_life_heavy_drinking), 0, early_life_heavy_drinking),
+    early_life_subst_use = early_life_alc_use + early_life_heavy_drinking
+  )
+
+# Perceived discrimination
+data_waves124 <- data_waves124 %>%
+  mutate(
+    teacher_discrimination = as.numeric(fct_recode(H2ED19, 
+      `1` = "(1) (1) Strongly agree", 
+      `2` = "(2) (2) Agree", 
+      `3` = "(3) (3) Neither agree nor disagree", 
+      `4` = "(4) (4) Disagree", 
+      `5` = "(5) (5) Strongly disagree"
+    )),
+    peer_prejudice = as.numeric(fct_recode(H2ED17, 
+      `1` = "(1) (1) Strongly agree", 
+      `2` = "(2) (2) Agree", 
+      `3` = "(3) (3) Neither agree nor disagree", 
+      `4` = "(4) (4) Disagree", 
+      `5` = "(5) (5) Strongly disagree"
+    )),
+    teacher_discrimination = ifelse(is.na(teacher_discrimination), 0, teacher_discrimination),
+    peer_prejudice = ifelse(is.na(peer_prejudice), 0, peer_prejudice),
+    perceived_discrimination = teacher_discrimination + peer_prejudice
+  )
+
+# Perceived social support
+data_waves124 <- data_waves124 %>%
+  mutate(
+    adult_support = as.numeric(fct_recode(H2PR1, 
+      `1` = "(1) (1) Not at all", 
+      `2` = "(2) (2) Very little", 
+      `3` = "(3) (3) Somewhat", 
+      `4` = "(4) (4) Quite a bit", 
+      `5` = "(5) (5) Very much"
+    )),
+    teacher_support = as.numeric(fct_recode(H2PR2, 
+      `1` = "(1) (1) Not at all", 
+      `2` = "(2) (2) Very little", 
+      `3` = "(3) (3) Somewhat", 
+      `4` = "(4) (4) Quite a bit", 
+      `5` = "(5) (5) Very much"
+    )),
+    parent_support = as.numeric(fct_recode(H2PR3, 
+      `1` = "(1) (1) Not at all", 
+      `2` = "(2) (2) Very little", 
+      `3` = "(3) (3) Somewhat", 
+      `4` = "(4) (4) Quite a bit", 
+      `5` = "(5) (5) Very much"
+    )),
+    peer_support = as.numeric(fct_recode(H2PR4, 
+      `1` = "(1) (1) Not at all", 
+      `2` = "(2) (2) Very little", 
+      `3` = "(3) (3) Somewhat", 
+      `4` = "(4) (4) Quite a bit", 
+      `5` = "(5) (5) Very much"
+    )),
+    adult_support = ifelse(is.na(adult_support), 0, adult_support),
+    teacher_support = ifelse(is.na(teacher_support), 0, teacher_support),
+    parent_support = ifelse(is.na(parent_support), 0, parent_support),
+    peer_support = ifelse(is.na(peer_support), 0, peer_support),
+    perceived_social_support = adult_support + teacher_support + parent_support + peer_support
+  )
+
+
+# Inspect data after creating composite variables
+summary(data_waves124)
 ```
 
