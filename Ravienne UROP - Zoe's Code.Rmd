@@ -162,10 +162,26 @@ data_waves124 <- data_waves124 |>
   mutate(aces = emotional_abuse + physical_abuse + sexual_abuse)
 
 #early life substance use :
-data_waves124$early_life_alc_use <- as.numeric(data_waves124$H1TO12 == "(1) (1) Yes")
-data_waves124$early_life_heavy_drinking <- levels(data_waves124$H1TO17) <- c(6, 5, 4, 3, 2, 1, 0)
-data_waves124 <- data_waves124 |> mutate(early_life_subst_use =
-                                           early_life_alc_use + early_life_heavy_drinking)
+data_waves124$early_life_alc_use <- as.numeric(
+  data_waves124$H1TO12 == "(1) (1) Yes")
+data_waves124$H1TO17 <- factor(
+  data_waves124$H1TO17,
+  levels = c(
+    "(6) (6)",
+    "(5) (5)",
+    "(4) (4)",
+    "(3) (3)",
+    "(2) (2)",
+    "(1) (1)",
+    "(0) (0)"
+  )
+)
+data_waves124$early_life_heavy_drinking <- as.numeric(
+  levels(
+    data_waves124$H1TO17
+    ))[data_waves124$H1TO17]
+data_waves124 <- data_waves124 |> 
+  mutate(early_life_subst_use = early_life_alc_use + early_life_heavy_drinking)
 ```
 
 ```{r}
@@ -174,15 +190,28 @@ data_waves124 <- data_waves124 |> mutate(early_life_subst_use =
 
 ```{r}
 #perceived discriminiation
-data_waves124$teacher_discrimination <- levels(data_waves124$H2ED19) = c(1, 2, 3, 4, 5)
-data_waves124$peer_prejudice <- levels(data_waves124$H2ED17) = c(5, 4, 3, 2, 1)
-data_waves124 <- data_waves124 |> mutate(perceived_discrimination = teacher_discrimination + peer_prejudice)
+data_waves124$H2ED19 <- factor(data_waves124$H2ED19,
+                               levels = c("(1) (1)", "(2) (2)", "(3) (3)", "(4) (4)", "(5) (5)"))
+data_waves124$teacher_discrimination <- as.numeric(levels(data_waves124$H2ED19))[data_waves124$H2ED19]
+data_waves124$H2ED17 <- factor(data_waves124$H2ED17,
+                               levels = c("(5) (5)", "(4) (4)", "(3) (3)", "(2) (2)", "(1) (1)"))
+data_waves124$peer_prejudice <- as.numeric(levels(data_waves124$H2ED17))[data_waves124$H2ED17]
+data_waves124 <- data_waves124 %>% mutate(perceived_discrimination =
+                                            teacher_discrimination + peer_prejudice)
 
 #perceived social support
-data_waves124$adult_support <- levels(data_waves124$H2PR1) = c(1, 2, 3, 4, 5)
-data_waves124$teacher_support <- levels(data_waves124$H2PR2) = c(1, 2, 3, 4, 5)
-data_waves124$parent_support <- levels(data_waves124$H2PR3) = c(1, 2, 3, 4, 5)
-data_waves124$peer_support <- levels(data_waves124$H2PR4) = c(1, 2, 3, 4, 5)
-data_waves124 <- data_waves124 |> mutate(perceived_social_support = adult_support + teacher_support + parent_support + peer_support)
+data_waves124$H2PR1 <- factor(data_waves124$H2PR1,
+                              levels = c("(1) (1)", "(2) (2)", "(3) (3)", "(4) (4)", "(5) (5)"))
+data_waves124$adult_support <- as.numeric(levels(data_waves124$H2PR1))[data_waves124$H2PR1]
+data_waves124$H2PR2 <- factor(data_waves124$H2PR2,
+                              levels = c("(1) (1)", "(2) (2)", "(3) (3)", "(4) (4)", "(5) (5)"))
+data_waves124$teacher_support <- as.numeric(levels(data_waves124$H2PR2))[data_waves124$H2PR2]
+data_waves124$H2PR3 <- factor(data_waves124$H2PR3,
+                              levels = c("(1) (1)", "(2) (2)", "(3) (3)", "(4) (4)", "(5) (5)"))
+data_waves124$parent_support <- as.numeric(levels(data_waves124$H2PR3))[data_waves124$H2PR3]
+data_waves124$H2PR4 <- factor(data_waves124$H2PR4,
+                              levels = c("(1) (1)", "(2) (2)", "(3) (3)", "(4) (4)", "(5) (5)"))
+data_waves124$peer_support <- as.numeric(levels(data_waves124$H2PR4))[data_waves124$H2PR4]
+data_waves124 <- data_waves124 %>% mutate(perceived_social_support = adult_support + teacher_support + parent_support + peer_support)
 ```
 
