@@ -94,7 +94,6 @@ data_waves124 <- data_waves124 |>
 ### Step 3.2: Creating composites for trickier variables 
 #### perceived discriminiation & social support
 ```{r}
-#perceived discriminiation
 data_waves124$teacher_discrimination <- data_waves124$H2ED19 |>
   fct_rev() |>
   as.numeric()
@@ -103,8 +102,9 @@ data_waves124$peer_prejudice <- data_waves124$H2ED17 |>
   fct_rev() |>
   as.numeric()
 
-data_waves124 <- data_waves124 |> mutate(perceived_discrimination = teacher_discrimination + peer_prejudice)
-
+data_waves124 <- data_waves124 |> mutate(
+  (perceived_discrimination = replace_na(teacher_discrimination, 0) +
+               replace_na(peer_prejudice, 0)))
 #perceived social support
 data_waves124$adult_support <- data_waves124$H2PR1 |>
   fct_rev() |>
@@ -120,7 +120,10 @@ data_waves124$peer_support <- data_waves124$H2PR4 |>
   as.numeric()
 
 data_waves124 <- data_waves124 |>
-  mutate(perceived_socsupport = adult_support + teacher_support + parent_support + peer_support)
+  mutate(perceived_social_support =
+    replace_na(adult_support, 0) + replace_na(teacher_support, 0)
+    + replace_na(parent_support, 0) + replace_na(peer_support, 0)
+  )
 ```
 
 ### Step 3.3: Cleaning + creating composites for questions related to problematic alcohol use
