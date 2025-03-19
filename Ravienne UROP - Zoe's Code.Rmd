@@ -127,7 +127,10 @@ data_waves124$peer_support <- data_waves124$H2PR4 |>
   as.numeric()
 
 data_waves124 <- data_waves124 |>
-  mutate(perceived_socsupport = adult_support + teacher_support + parent_support + peer_support)
+  mutate(perceived_social_support =
+    replace_na(adult_support, 0) + replace_na(teacher_support, 0)
+    + replace_na(parent_support, 0) + replace_na(peer_support, 0)
+  )
 ```
 
 ### Step 3.3: Cleaning + creating composites for questions related to problematic alcohol use
@@ -135,7 +138,7 @@ data_waves124 <- data_waves124 |>
 
 ```{r}
 #early life substance use
-data_waves124$early_life_alc_use <- as.numeric(data_waves124$H1TO12 == "(1) (1) Yes")x
+data_waves124$early_life_alc_use <- as.numeric(data_waves124$H1TO12 == "(1) (1) Yes")
 
 data_waves124$early_life_heavy_drinking <- data_waves124$H1TO17 |>
   fct_rev() |>
@@ -228,7 +231,7 @@ AUD_indicators <- data_waves124 |>
          substance_misuse,
          drinking_exp,
          starts_with("sud"),
-         H4TO47:H4TO60,
+         H4TO47:H4TO62,
         )
 write_csv(x = AUD_indicators, file = "problematic_alcohol_misuse_addhealth.csv")
 ```
