@@ -62,30 +62,51 @@ data_waves124$teacher_discrimination <- data_waves124$H2ED19 |>
 data_waves124$peer_prejudice <- data_waves124$H2ED17 |>
   fct_rev() |>
   as.numeric() 
+data_waves124$teacher_discrimination <- data_waves124$H2ED19 |>
+  fct_rev() |>
+  as.numeric()
 
-data_waves124 <- data_waves124 %>% mutate(perceived_discrimination = teacher_discrimination + peer_prejudice)
+data_waves124$peer_prejudice <- data_waves124$H2ED17 |>
+  fct_rev() |>
+  as.numeric()
 
+data_waves124 <- data_waves124 |> mutate(
+  (perceived_discrimination = replace_na(teacher_discrimination, 0) +
+               replace_na(peer_prejudice, 0)))
 #perceived social support
 data_waves124$adult_support <- data_waves124$H2PR1 |>
   fct_rev() |>
-  as.numeric() 
+  as.numeric()
 data_waves124$teacher_support <- data_waves124$H2PR2 |>
   fct_rev() |>
-  as.numeric() 
+  as.numeric()
 data_waves124$parent_support <- data_waves124$H2PR3 |>
   fct_rev() |>
-  as.numeric() 
+  as.numeric()
 data_waves124$peer_support <- data_waves124$H2PR4 |>
   fct_rev() |>
-  as.numeric() 
+  as.numeric()
 
-data_waves124 <- data_waves124 |> 
-  mutate(perceived_social_support = adult_support + teacher_support + parent_support + peer_support)
+data_waves124 <- data_waves124 |>
+  mutate(perceived_social_support =
+    replace_na(adult_support, 0) + replace_na(teacher_support, 0)
+    + replace_na(parent_support, 0) + replace_na(peer_support, 0)
+  )
+
 data_waves124$early_life_alc_use <- as.numeric(data_waves124$H1TO12 == "(1) (1) Yes")
 data_waves124$early_life_heavy_drinking <- as.numeric(data_waves124$H1TO17)
 
+#early life substance use
+data_waves124$early_life_alc_use <- as.numeric(data_waves124$H1TO12 == "(1) (1) Yes")
+
+data_waves124$early_life_heavy_drinking <- data_waves124$H1TO17 |>
+  fct_rev() |>
+  as.numeric()
+
 data_waves124 <- data_waves124 |>
-  mutate(early_life_subst_use = early_life_alc_use + early_life_heavy_drinking)
+  mutate(
+    early_life_subst_use = replace_na(early_life_alc_use, 0) + replace_na(early_life_heavy_drinking, 0)
+  )
 #Have you ever found that you had to drink more than you used to in order to get the effect you wanted?
 data_waves124$sud_progression1 <- as.numeric(data_waves124$H4TO51 == "(1) (1) Yes")
 
