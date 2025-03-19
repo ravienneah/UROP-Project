@@ -110,9 +110,10 @@ data_waves124$peer_prejudice <- data_waves124$H2ED17 |>
   fct_rev() |>
   as.numeric()
 
-data_waves124 <- data_waves124 |> mutate(perceived_discrimination = teacher_discrimination + peer_prejudice)
+data_waves124 <- data_waves124 |> mutate(
+  (perceived_discrimination = replace_na(teacher_discrimination, 0) +
+               replace_na(peer_prejudice, 0)))
 
-#perceived social support
 data_waves124$adult_support <- data_waves124$H2PR1 |>
   fct_rev() |>
   as.numeric()
