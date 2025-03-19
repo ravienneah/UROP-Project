@@ -3,11 +3,14 @@ Ravienne UROP - Zoe’s Code
 Zoe Habel
 2025-03-19
 
+---
+
 #### Loading packages
 
 ```{r,output=F}
 library(tidyverse) 
 ```
+
 *tidyverse includes dplyr*
 
 #### Here's where I loaded my data locally
@@ -94,34 +97,47 @@ data_waves124 <- data_waves124 |>
 #perceived discriminiation
 data_waves124$teacher_discrimination <- data_waves124$H2ED19 |>
   fct_rev() |>
-  as.numeric() 
+  as.numeric()
 
 data_waves124$peer_prejudice <- data_waves124$H2ED17 |>
   fct_rev() |>
-  as.numeric() 
+  as.numeric()
 
-data_waves124 <- data_waves124 %>% mutate(perceived_discrimination = teacher_discrimination + peer_prejudice)
+data_waves124 <- data_waves124 |> mutate(perceived_discrimination = teacher_discrimination + peer_prejudice)
 
 #perceived social support
 data_waves124$adult_support <- data_waves124$H2PR1 |>
   fct_rev() |>
-  as.numeric() 
+  as.numeric()
 data_waves124$teacher_support <- data_waves124$H2PR2 |>
   fct_rev() |>
-  as.numeric() 
+  as.numeric()
 data_waves124$parent_support <- data_waves124$H2PR3 |>
   fct_rev() |>
-  as.numeric() 
+  as.numeric()
 data_waves124$peer_support <- data_waves124$H2PR4 |>
   fct_rev() |>
-  as.numeric() 
+  as.numeric()
 
+data_waves124 <- data_waves124 |>
+  mutate(perceived_socsupport = adult_support + teacher_support + parent_support + peer_support)
 ```
 
 ### Step 3.3: Cleaning + creating composites for questions related to problematic alcohol use
 #### Domain approach + study skip logic
 
 ```{r}
+#early life substance use
+data_waves124$early_life_alc_use <- as.numeric(data_waves124$H1TO12 == "(1) (1) Yes")
+
+data_waves124$early_life_heavy_drinking <- data_waves124$H1TO17 |>
+  fct_rev() |>
+  as.numeric()
+
+data_waves124 <- data_waves124 |>
+  mutate(
+    early_life_subst_use = replace_na(early_life_alc_use, 0) + replace_na(early_life_heavy_drinking, 0)
+  )
 #Have you ever found that you had to drink more than you used to in order to get the effect you wanted?
 data_waves124$sud_progression1 <- as.numeric(data_waves124$H4TO51 == "(1) (1) Yes")
 
@@ -213,14 +229,11 @@ write_csv(x = AUD_indicators, file = "problematic_alcohol_misuse_addhealth.csv")
 ### Step 4: Check that the composites were created successfully
 
 ```{r,eval=F,include=T}
-addhealth_clean_and_composites <- (data_waves124[, c(1, 30:60)])
+addhealth_clean_and_composites <- (data_waves124[, c(1, 27:60)])
 summary(addhealth_clean_and_composites)
 write_csv(x=addhealth_clean_and_composites,"addhealth_clean_and_composites")
 ```
-`
 
-
-------------------------------------------------------------------------
 ## **Ravienne’s code as of 03/09/25**
 
 ```{r,eval=F,include=T}
@@ -284,4 +297,4 @@ merg2$teacher_support <- levels(merg2$H2PR2) = c(1, 2, 3, 4, 5)
 merg2$parent_support <- levels(merg2$H2PR3) = c(1, 2, 3, 4, 5)
 merg2$peer_support <- levels(merg2$H2PR4) = c(1, 2, 3, 4, 5)
 merg2 <- merg2 %>% mutate(perceived_social_support = adult_support + teacher_support + parent_support + peer_support)
-``
+```
