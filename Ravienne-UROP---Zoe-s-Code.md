@@ -1,10 +1,17 @@
+
+<!-- rnb-text-begin -->
+
 ---
 title: "Ravienne UROP - Zoe's Code"
 author: "Zoe Habel"
-date: "`r Sys.Date()`"
+date: "2025-03-25"
 output:
-  html_notebook: default
+  github_document: default
   pdf_document: default
+  html_notebook: default
+header-includes:
+- \usepackage{fvextra}
+- \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
 ---
 #### Loading packages
 
