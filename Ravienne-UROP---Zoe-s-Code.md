@@ -104,11 +104,17 @@ BIO_SEX4 = 1
 summary(skiplogic35$past_year_alc_use)
 summary(data_waves124$H4TO35)
 
+#If BIO_SEX4 = 1 then: If Q35 = 5, 6, 7 and Q36 > 3, ask Q46. 
 malecriteria1_ask46 <- skiplogic35 |>
-  filter(past_year_alc_use == 5:7) |>
+  filter(BIO_SEX4 == "(1) (1) Male") |>
+  filter(past_year_alc_use > 4) |>
   filter(H4TO36 > 3)
 
+#Else if Q44 = 4, 5, 6, 7 and Q45 > 3, ask Q46. 
 malecriteria2_ask46 <- skiplogic44 |>
+  filter(BIO_SEX4 == "(1) (1) Male") |>
+  filter(former_alc_use > 3) |>
+  filter(H4TO45 > 3)
   
 
 summary(malecriteria_ask46$H4TO36)
