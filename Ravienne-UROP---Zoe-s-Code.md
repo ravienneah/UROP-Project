@@ -74,15 +74,12 @@ skiplogic35 <- skiplogic33 |>
   mutate(past_year_alc_use = as.numeric(H4TO35)) |> 
   filter(past_year_alc_use != 1, na.rm = TRUE)
 
+# 43. Was there ever a period in your life when you drank more alcohol than you do now
+
 skiplogic43 <- skiplogic33 |>
   mutate(ever_drank_more = as.numeric(H4TO43== "(1) (1) Yes")) |>
   filter(ever_drank_more==1)
 
-      
-summary(skiplogic43$ever_drank_more)
-         
-44 logic
-If Q43 = 0, 6, 8, skip to checkpoint before Q46, else ask Q44.
 # ---
 
 skiplogic39 <- skiplogic35 |>
@@ -94,17 +91,10 @@ skiplogic40 <- skiplogic39 |>
 
 skiplogic44 <- skiplogic43 |>
   filter(!is.na(H4TO44)) |>
-  mutate(H4TO44)
+  mutate(former_alc_use = as.numeric(H4TO44)) |>
+  filter(!is.na(H4TO45))
 
-----
-  
-skiplogic46 <-  |>
-  filter(!is.na(H4TO44))
-
-BIO_SEX4 = 1
-
-summary(skiplogic35$past_year_alc_use)
-summary(data_waves124$H4TO35)
+# --
 
 #If BIO_SEX4 = 1 then: If Q35 = 5, 6, 7 and Q36 > 3, ask Q46. 
 malecriteria1_ask46 <- skiplogic35 |>
@@ -117,12 +107,7 @@ malecriteria2_ask46 <- skiplogic44 |>
   filter(BIO_SEX4 == "(1) (1) Male") |>
   filter(former_alc_use > 3) |>
   filter(H4TO45 > 3)
-  
 
-summary(malecriteria_ask46$H4TO36)
-#Checkpoint before 
-
-summary(skiplogic44$H4TO44)
 #Q46: 
 
 #If BIO_SEX4 = 1 then: If Q35 = 5, 6, 7 and Q36 > 3, ask Q46. 
@@ -133,7 +118,7 @@ summary(skiplogic44$H4TO44)
 #If BIO_SEX4 = 2 then: If Q35 = 5, 6, 7 and Q36 > 2, ask Q46. 
 #Else if Q44 = 4, 5, 6, 7 and Q45 > 2, ask Q46. 
 
-Else skip to Q63. How many times has each of the following things ever happened?
+#Else skip to Q63. How many times has each of the following things ever happened?
   
 missing_practice <- data_waves124 |>
   mutate(lifetime_alc_use = as.numeric(H4TO33 == "(1) (1) Yes"))   |>
@@ -142,27 +127,6 @@ missing_practice <- data_waves124 |>
   filter(past_year_alc_use != 1, na.rm = TRUE) |> 
   mutate(drinking_days_last_month = as.numeric(H4TO39)) |>
   filter(drinking_days_last_month != 1, na.rm = TRUE) 
-
-# 43. Was there ever a period in your life when you drank more alcohol than you do now?
-
-
-
-##  39. During the past 30 days, on how many days did you drink?
-
-# H4TO39 -> if 'none' - skip H4TO40:H4TO42T
-
-
-# 36. Think of all the times you have had a drink during the past **12 months.** How many drinks did you usually have each time? 
-
-# H4TO36 -> skip H4TO37:H4TO42T
-# legit skip # : 4427
-#   + 1105 skipped (H4TO35 + H4TO33)
-
-
-
-summary(data_waves124$H4TO36)
-
-
 
 ```
 ![H4TO33 - missing data info](addhealth_H4TO33.png){width="500"}
