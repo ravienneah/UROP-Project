@@ -70,13 +70,12 @@ skiplogic35 <- skiplogic33 |>
   mutate(past_year_alc_use = as.numeric(H4TO35)) |> 
   filter(past_year_alc_use != 1, na.rm = TRUE)
 
-# 43. Was there ever a period in your life when you drank more alcohol than you do now
-
 skiplogic43 <- skiplogic33 |>
   mutate(ever_drank_more = as.numeric(H4TO43== "(1) (1) Yes")) |>
   filter(ever_drank_more==1)
+```
 
-# ---
+```{r}
 
 skiplogic39 <- skiplogic35 |>
   mutate(drinking_days_last_month = as.numeric(H4TO39)) |>
@@ -87,10 +86,12 @@ skiplogic40 <- skiplogic39 |>
 
 skiplogic44 <- skiplogic43 |>
   filter(!is.na(H4TO44)) |>
-  mutate(former_alc_use = as.numeric(H4TO44)) |>
-  filter(!is.na(H4TO45))
+  mutate(H4TO44)
 
-# --
+```
+
+```{r}
+  
 
 #If BIO_SEX4 = 1 then: If Q35 = 5, 6, 7 and Q36 > 3, ask Q46. 
 malecriteria1_ask46 <- skiplogic35 |>
@@ -104,18 +105,8 @@ malecriteria2_ask46 <- skiplogic44 |>
   filter(former_alc_use > 3) |>
   filter(H4TO45 > 3)
 
-#Q46: 
-
-#If BIO_SEX4 = 1 then: If Q35 = 5, 6, 7 and Q36 > 3, ask Q46. 
-#Else if Q44 = 4, 5, 6, 7 and Q45 > 3, ask Q46. 
-
-#Else skip to Q63. 
-
-#If BIO_SEX4 = 2 then: If Q35 = 5, 6, 7 and Q36 > 2, ask Q46. 
-#Else if Q44 = 4, 5, 6, 7 and Q45 > 2, ask Q46. 
-
-#Else skip to Q63. How many times has each of the following things ever happened?
-  
+```
+```{r}
 missing_practice <- data_waves124 |>
   mutate(lifetime_alc_use = as.numeric(H4TO33 == "(1) (1) Yes"))   |>
   filter(lifetime_alc_use==1) |>
