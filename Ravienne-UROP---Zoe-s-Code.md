@@ -4,14 +4,9 @@
 ---
 title: "Ravienne UROP - Zoe's Code"
 author: "Zoe Habel"
-date: "2025-03-25"
+date: "2025-04-03"
 output:
   github_document: default
-  pdf_document: default
-  html_notebook: default
-header-includes:
-- \usepackage{fvextra}
-- \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
 ---
 #### Loading packages
 
