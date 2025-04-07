@@ -1,8 +1,15 @@
 # load data
+<<<<<<< HEAD
 load("~/Desktop/git/urop_ravienne/ICPSR UROP Data/ICPSR_21600 4/DS0005/21600-0005-Data.rda")
 load("~/Desktop/git/urop_ravienne/ICPSR UROP Data/ICPSR_21600/DS0001/21600-0001-Data.rda")
 load("~/Desktop/QPL/urop_ravienne/ICPSR UROP Data/ICPSR_21600 8/DS0022/21600-0022-Data.rda")
 #wave 1 git
+=======
+load("~/Desktop/QPL/urop_ravienne/ICPSR UROP Data/ICPSR_21600 4/DS0005/21600-0005-Data.rda")
+load("~/Desktop/QPL/urop_ravienne/ICPSR UROP Data/ICPSR_21600/DS0001/21600-0001-Data.rda")
+load("~/Desktop/QPL/urop_ravienne/ICPSR UROP Data/ICPSR_21600 8/DS0022/21600-0022-Data.rda")
+#wave 1 variables
+>>>>>>> b38943a64f5e3b7ede1e20aef6316f51a53d532a
 data_wave1 <- da21600.0001 |> 
   select(
     AID, H1TO12, H1TO17
@@ -72,7 +79,11 @@ data_waves124$peer_prejudice <- data_waves124$H2ED17 |>
 
 data_waves124 <- data_waves124 |> mutate(
   (perceived_discrimination = replace_na(teacher_discrimination, 0) +
+<<<<<<< HEAD
      replace_na(peer_prejudice, 0)))
+=======
+               replace_na(peer_prejudice, 0)))
+>>>>>>> b38943a64f5e3b7ede1e20aef6316f51a53d532a
 #perceived social support
 data_waves124$adult_support <- data_waves124$H2PR1 |>
   fct_rev() |>
@@ -89,8 +100,13 @@ data_waves124$peer_support <- data_waves124$H2PR4 |>
 
 data_waves124 <- data_waves124 |>
   mutate(perceived_social_support =
+<<<<<<< HEAD
            replace_na(adult_support, 0) + replace_na(teacher_support, 0)
          + replace_na(parent_support, 0) + replace_na(peer_support, 0)
+=======
+    replace_na(adult_support, 0) + replace_na(teacher_support, 0)
+    + replace_na(parent_support, 0) + replace_na(peer_support, 0)
+>>>>>>> b38943a64f5e3b7ede1e20aef6316f51a53d532a
   )
 
 data_waves124$early_life_alc_use <- as.numeric(data_waves124$H1TO12 == "(1) (1) Yes")
@@ -196,4 +212,8 @@ AUD_indicators <- data_waves124 |>
          H4TO47:H4TO60
   )
 
+<<<<<<< HEAD
 write_csv(x = AUD_indicators, file = "problematic_alcohol_use_addhealth.csv")
+=======
+write_csv(x = AUD_indicators, file = "problematic_alcohol_use_addhealth.csv")
+>>>>>>> b38943a64f5e3b7ede1e20aef6316f51a53d532a
