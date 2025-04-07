@@ -1,7 +1,6 @@
 ---
 title: "Missing Data Handling"
-output: html_document
-github_document: default
+output: github_document
 
 ---
 #### Loading packages
