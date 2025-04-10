@@ -166,17 +166,21 @@ missing_practice <- data_waves124 |>
 
 
 cx_met_lifetime <- cx_met_lifetime |>
-  mutate(early_life_alc_use = (as.numeric(cx_met_lifetimeH1TO12 == "(1) (1) Yes")))
-cx_met_lifetime$early_life_heavy_drinking <- cx_met_lifetime$H1TO17 |>
-  fct_rev() |>
-  as.numeric()
+  mutate(early_life_alc_use = (
+    as.numeric(H1TO12 == "(1) (1) Yes")))
 
+# need to debug these
 
+#cx_met_lifetime <- cx_met_lifetime |>
+#  filter(early_life_alc_use == 1,  na.rm = TRUE) |>
+#  mutate(early_life_heavy_drinking = fct_rev(H1TO17),na.rm=TRUE) |>
+#  as.numeric(early_life_heavy_drinking)
 
-cx_met_lifetime <- cx_met_lifetime |>
-  mutate(
-    early_life_subst_use = replace_na(early_life_alc_use, 0) + replace_na(early_life_heavy_drinking, 0)
-  )
+#cx_met_lifetime <- cx_met_lifetime |>
+#  filter(early_life_alc_use == 1, na.rm = TRUE) |>
+#  mutate(early_life_subst_use = early_life_heavy_drinking)
+
+  
 #Have you ever found that you had to drink more than you used to in order to get the effect you wanted?
 cx_met_lifetime$sud_progression1 <- as.numeric(cx_met_lifetime$H4TO51 == "(1) (1) Yes")
 
@@ -202,23 +206,33 @@ cx_met_lifetime$sud_preoccupation2 <- as.numeric(cx_met_lifetime$H4TO52 == "(1) 
 #How often have you been under the influence of alcohol when you could have gotten yourself or others hurt, or put yourself or others at risk, including unprotected sex?
 cx_met_lifetime$sud_preoccupation3 <- cx_met_lifetime$H4TO47 |>
 fct_collapse("(1) Once or more"= c("(1) (1) 1 time","(2) (2) More than 1 time"))
+
 cx_met_lifetime$sud_preoccupation3 <-as.numeric(
   cx_met_lifetime$sud_preoccupation1=="(1) Once or more")
 
 # Have you often had more to drink or kept drinking for a longer period of time than you intended?
 cx_met_lifetime$sud_losscontrol1 <- as.numeric(cx_met_lifetime$H4TO53 == "(1) (1) Yes")
 
-#Has there ever been a period of time when you wanted to quit or cut down on your drinking?
-cx_met_lifetime$sud_losscontrol2 <- as.numeric(cx_met_lifetime$H4TO55 == "(1) (1) Yes")
-
 #Have you ever tried to quit or cut down on your drinking?
 #If Q54 = 0, 6, 8, ask Q55, else if Q54 = 1, skip to Q56.
-cx_met_lifetime$sud_losscontrol3 <- as.numeric(cx_met_lifetime$H4TO54 == "(1) (1) Yes")
 
 skiplogic54 <- cx_met_lifetime |>
   filter(!is.na(H4TO54)) |>
-  mutate(sud_losscontrol3 = as.numeric(H4TO44))
+  mutate(sud_losscontrol3 = as.numeric(H4TO54))
+
+#Has there ever been a period of time when you wanted to quit or cut down on your drinking?
+
+cx_met_lifetime <- skiplogic54 |>
+  filter(H4TO54 == 0) |>
+  mutate(sud_losscontrol2 = as.numeric(H4TO54 == "(1) (1) Yes"))
+
 #When you decided to cut down or quit drinking, were you able to do so for at least one month?
+
+cx_met_lifetime <- skiplogic54 |>
+#  mutate(sud_losscontrol4 = fct_rev(H4TO56)) |>
+  filter(H4TO54 == 1)|>
+  as.numeric(sud_losscontrol4) 
+
 cx_met_lifetime$sud_losscontrol4 <- cx_met_lifetime$H4TO56 |>
   fct_rev() |>
   as.numeric() 
@@ -226,6 +240,9 @@ cx_met_lifetime$sud_losscontrol4 <- cx_met_lifetime$H4TO56 |>
 #Have you ever continued to drink after you realized drinking was causing you any emotional problems (such as feeling irritable, depressed, or uninterested in things or having strange ideas) or causing you any health problems (such as ulcers, numbness in your hands/feet or memory problems)?
 
 cx_met_lifetime$sud_persistence1 <- as.numeric(cx_met_lifetime$H4TO59 == "(1) (1) Yes")
+
+cx_met_lifetime <- cx_met_lifetime |>
+  mutate(sud_persistence1 = as.numeric(cx_met_lifetime$H4TO59 == "(1) (1) Yes"))
 
 #Have you ever given up or cut down on important activities that would interfere with drinking like getting together with friends or relatives, going to work or school, participating in sports, or anything else?
 
@@ -235,10 +252,10 @@ cx_met_lifetime$sud_persistence2 <- as.numeric(cx_met_lifetime$H4TO60 == "(1) (1
 
 cx_met_lifetime <- cx_met_lifetime |>
   mutate(
-    sud_progression = replace_na(sud_progression1, 0) + replace_na(sud_progression2, 0) + replace_na(sud_progression3, 0),
-    sud_preoccupation = replace_na(sud_preoccupation1, 0) + replace_na(sud_preoccupation2, 0) + replace_na(sud_preoccupation3, 0),
-    sud_losscontrol = replace_na(sud_losscontrol1, 0) + replace_na(sud_losscontrol2, 0) + replace_na(sud_losscontrol3, 0) + replace_na(sud_losscontrol4, 0),
-    sud_persistence = replace_na(sud_persistence1, 0) + replace_na(sud_persistence2, 0)
+    sud_progression = sud_progression1 + sud_progression2 + sud_progression3,
+#    sud_preoccupation = sud_preoccupation1 + sud_preoccupation2 + sud_preoccupation3,
+#    sud_losscontrol = sud_losscontrol1 + sud_losscontrol2 + sud_losscontrol3 + sud_losscontrol4,
+    sud_persistence = sud_persistence1 + sud_persistence2
   )
 
 # Create composite drinking experiences
