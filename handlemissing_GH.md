@@ -140,13 +140,13 @@ cx_met_lifetime <- lifetime_cx_list |>
 ```
 
 ``` r
-missing_practice <- data_waves124 |>
-  mutate(lifetime_alc_use = as.numeric(H4TO33 == "(1) (1) Yes"))   |>
-  filter(lifetime_alc_use==1) |>
-  mutate(past_year_alc_use = as.numeric(H4TO35)) |> 
-  filter(past_year_alc_use != 1, na.rm = TRUE) |> 
-  mutate(drinking_days_last_month = as.numeric(H4TO39)) |>
-  filter(drinking_days_last_month != 1, na.rm = TRUE) 
+#missing_practice <- data_waves124 |>
+#  mutate(lifetime_alc_use = as.numeric(H4TO33 == "(1) (1) Yes"))   |>
+#  filter(lifetime_alc_use==1) |>
+#  mutate(past_year_alc_use = as.numeric(H4TO35)) |> 
+#  filter(past_year_alc_use != 1, na.rm = TRUE) |> 
+#  mutate(drinking_days_last_month = as.numeric(H4TO39)) |>
+#  filter(drinking_days_last_month != 1, na.rm = TRUE) 
 ```
 
 ``` r
@@ -157,17 +157,27 @@ cx_met_lifetime <- cx_met_lifetime |>
   mutate(early_life_alc_use = (
     as.numeric(H1TO12 == "(1) (1) Yes")))
 
-# need to debug these
 
-#cx_met_lifetime <- cx_met_lifetime |>
-#  filter(early_life_alc_use == 1,  na.rm = TRUE) |>
-#  mutate(early_life_heavy_drinking = fct_rev(H1TO17),na.rm=TRUE) |>
-#  as.numeric(early_life_heavy_drinking)
+cx_met_lifetime <- cx_met_lifetime |>
+  filter(early_life_alc_use == 1) |>
+  mutate(
+    early_life_heavy_drinking = H1TO17 |>
+      fct_rev() |>   
+      as.numeric()
+  )
 
-#cx_met_lifetime <- cx_met_lifetime |>
-#  filter(early_life_alc_use == 1, na.rm = TRUE) |>
-#  mutate(early_life_subst_use = early_life_heavy_drinking)
+cx_met_lifetime <- cx_met_lifetime |>
+  filter(early_life_alc_use == 1) |>
+  filter(early_life_heavy_drinking != 1) |>
+  mutate(if_else(early_life_alc_use == 1) & (early_life_heavy_drinking != 1)),
+         
+         
+?if_else
+    early_life_subst_use = early_life_alc_use +
+           early_life_heavy_drinking)
 
+table(cx_met_lifetime$early_life_heavy_drinking)
+summary(cx_met_lifetime$early_life_heavy_drinking)
   
 #Have you ever found that you had to drink more than you used to in order to get the effect you wanted?
 cx_met_lifetime$sud_progression1 <- as.numeric(cx_met_lifetime$H4TO51 == "(1) (1) Yes")
