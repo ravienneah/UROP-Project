@@ -161,7 +161,7 @@ missing_practice <- data_waves124 |>
 
 ```
 
-```{r}
+```{r eval = FALSE}
 #early life substance use
 
 
@@ -297,7 +297,7 @@ write_csv(x=addhealth_clean_and_composites,"addhealth_clean_and_composites")
 
 ## Missing Data handling
 
-```{r}
+```{r eval=FALSE}
 missing_AUD <- as.data.frame(which(is.na(AUD_indicators$sud_progression1)))
 count(missing_AUD)
 ```

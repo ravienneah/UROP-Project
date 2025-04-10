@@ -88,13 +88,15 @@ skiplogic44 <- skiplogic43 |>
 malecriteria1_ask46 <- skiplogic35 |>
   filter(BIO_SEX4 == "(1) (1) Male") |>
   filter(past_year_alc_use > 4) |>
-  filter(H4TO36 > 3)
+  filter(H4TO36 > 3) |>
+  filter(!is.na(H4TO46))
 
 #Else if Q44 = 4, 5, 6, 7 and Q45 > 3, ask Q46. 
 malecriteria2_ask46 <- skiplogic44 |>
   filter(BIO_SEX4 == "(1) (1) Male") |>
   filter(former_alc_use > 3) |>
-  filter(H4TO45 > 3)
+  filter(H4TO45 > 3) |>
+  filter(!is.na(H4TO46))
 ```
 
 ``` r
@@ -102,13 +104,15 @@ malecriteria2_ask46 <- skiplogic44 |>
 femalecriteria1_ask46 <- skiplogic35 |>
   filter(BIO_SEX4 == "(2) (2) Female") |>
   filter(past_year_alc_use > 4) |>
-  filter(H4TO36 > 2)
+  filter(H4TO36 > 2) |>
+  filter(!is.na(H4TO46))
 
 #Else if Q44 = 4, 5, 6, 7 and Q45 > 3, ask Q46. 
 femalecriteria2_ask46 <- skiplogic44 |>
   filter(BIO_SEX4 == "(2) (2) Female") |>
   filter(former_alc_use > 3) |>
-  filter(H4TO45 > 2)
+  filter(H4TO45 > 2) |>
+  filter(!is.na(H4TO46))
 
 all_AID <- data_waves124 |>
   select(AID)
@@ -123,17 +127,16 @@ female_cx_met_current <- left_join(all_AID, femalecriteria1_ask46, by = c("AID" 
                                                                             "AID"))
 female_cx_met_former <- left_join(all_AID, femalecriteria2_ask46, by = c("AID" =
                                                                            "AID"))
+lifetime_cx_list <- list(
+  male_cx_met_current,
+  female_cx_met_current,
+  male_cx_met_former,
+  female_cx_met_former
+)
 
-
-cx_met_lifetime <- left_join(all_AID, male_cx_met_current,by = c("AID" = "AID")) 
-cx_met_lifetime <- left_join(cx_met_lifetime, male_cx_met_former, by = c("AID" ="AID")) 
-cx_met_lifetime <-  left_join(cx_met_lifetime, female_cx_met_current, by = c("AID" = "AID")) 
-cx_met_lifetime <-  left_join(cx_met_lifetime, female_cx_met_former, by = c("AID" = "AID"))  
-
-cx_met_lifetime <- cx_met_lifetime |> 
-  filter()
-
-#?left_join
+cx_met_lifetime <- lifetime_cx_list |>
+  reduce(left_join, by = "AID", suffix = c("", "")) |>
+  filter(!is.na(H4TO46))
 ```
 
 ``` r
@@ -150,97 +153,118 @@ missing_practice <- data_waves124 |>
 #early life substance use
 
 
-data_waves124 <- data_waves124 |>
-  mutate(early_life_alc_use = (as.numeric(data_waves124$H1TO12 == "(1) (1) Yes")))
-data_waves124$early_life_heavy_drinking <- data_waves124$H1TO17 |>
-  fct_rev() |>
-  as.numeric()
+cx_met_lifetime <- cx_met_lifetime |>
+  mutate(early_life_alc_use = (
+    as.numeric(H1TO12 == "(1) (1) Yes")))
 
+# need to debug these
 
+#cx_met_lifetime <- cx_met_lifetime |>
+#  filter(early_life_alc_use == 1,  na.rm = TRUE) |>
+#  mutate(early_life_heavy_drinking = fct_rev(H1TO17),na.rm=TRUE) |>
+#  as.numeric(early_life_heavy_drinking)
 
-data_waves124 <- data_waves124 |>
-  mutate(
-    early_life_subst_use = replace_na(early_life_alc_use, 0) + replace_na(early_life_heavy_drinking, 0)
-  )
+#cx_met_lifetime <- cx_met_lifetime |>
+#  filter(early_life_alc_use == 1, na.rm = TRUE) |>
+#  mutate(early_life_subst_use = early_life_heavy_drinking)
+
+  
 #Have you ever found that you had to drink more than you used to in order to get the effect you wanted?
-data_waves124$sud_progression1 <- as.numeric(data_waves124$H4TO51 == "(1) (1) Yes")
+cx_met_lifetime$sud_progression1 <- as.numeric(cx_met_lifetime$H4TO51 == "(1) (1) Yes")
 
 #During the first few hours of not drinking do you experience withdrawal symptoms such as the shakes, feeling anxious, trouble getting to sleep or staying asleep, nausea, vomiting, or rapid heartbeats?
-data_waves124$sud_progression2 <- as.numeric(data_waves124$H4TO58 == "(1) (1) Yes")
+cx_met_lifetime$sud_progression2 <- as.numeric(cx_met_lifetime$H4TO58 == "(1) (1) Yes")
 
 #How often has your drinking ever interfered with your responsibilities at work or school?
-data_waves124$sud_progression3 <- data_waves124$H4TO46 |>
+cx_met_lifetime$sud_progression3 <- cx_met_lifetime$H4TO46 |>
 fct_collapse("(1) Once or more"= c("(1) (1) 1 time","(2) (2) More than 1 time"))
-data_waves124$sud_progression3 <-as.numeric(
-  data_waves124$sud_progression3=="(1) Once or more")
+cx_met_lifetime$sud_progression3 <-as.numeric(
+  cx_met_lifetime$sud_progression3=="(1) Once or more")
 
 #How often have you had legal problems because of your drinking, like being arrested for disturbing the peace or driving under the influence of alcohol, or anything else?
-data_waves124$sud_preoccupation1 <- data_waves124$H4TO48 |>
+cx_met_lifetime$sud_preoccupation1 <- cx_met_lifetime$H4TO48 |>
 fct_collapse("(1) Once or more"= c("(1) (1) 1 time","(2) (2) More than 1 time"))
 
-data_waves124$sud_preoccupation1 <-as.numeric(
-  data_waves124$sud_preoccupation1=="(1) Once or more")
+cx_met_lifetime$sud_preoccupation1 <-as.numeric(
+  cx_met_lifetime$sud_preoccupation1=="(1) Once or more")
 
 #Has there ever been a period when you spent a lot of time drinking, planning how you would get alcohol, or recovering from a hangover?
-data_waves124$sud_preoccupation2 <- as.numeric(data_waves124$H4TO52 == "(1) (1) Yes")
+cx_met_lifetime$sud_preoccupation2 <- as.numeric(cx_met_lifetime$H4TO52 == "(1) (1) Yes")
 
 #How often have you been under the influence of alcohol when you could have gotten yourself or others hurt, or put yourself or others at risk, including unprotected sex?
-data_waves124$sud_preoccupation3 <- data_waves124$H4TO47 |>
+cx_met_lifetime$sud_preoccupation3 <- cx_met_lifetime$H4TO47 |>
 fct_collapse("(1) Once or more"= c("(1) (1) 1 time","(2) (2) More than 1 time"))
-data_waves124$sud_preoccupation3 <-as.numeric(
-  data_waves124$sud_preoccupation1=="(1) Once or more")
+
+cx_met_lifetime$sud_preoccupation3 <-as.numeric(
+  cx_met_lifetime$sud_preoccupation1=="(1) Once or more")
 
 # Have you often had more to drink or kept drinking for a longer period of time than you intended?
-data_waves124$sud_losscontrol1 <- as.numeric(data_waves124$H4TO53 == "(1) (1) Yes")
-
-#Has there ever been a period of time when you wanted to quit or cut down on your drinking?
-data_waves124$sud_losscontrol2 <- as.numeric(data_waves124$H4TO55 == "(1) (1) Yes")
+cx_met_lifetime$sud_losscontrol1 <- as.numeric(cx_met_lifetime$H4TO53 == "(1) (1) Yes")
 
 #Have you ever tried to quit or cut down on your drinking?
-data_waves124$sud_losscontrol3 <- as.numeric(data_waves124$H4TO54 == "(1) (1) Yes")
+#If Q54 = 0, 6, 8, ask Q55, else if Q54 = 1, skip to Q56.
+
+skiplogic54 <- cx_met_lifetime |>
+  filter(!is.na(H4TO54)) |>
+  mutate(sud_losscontrol3 = as.numeric(H4TO54))
+
+#Has there ever been a period of time when you wanted to quit or cut down on your drinking?
+
+cx_met_lifetime <- skiplogic54 |>
+  filter(H4TO54 == 0) |>
+  mutate(sud_losscontrol2 = as.numeric(H4TO54 == "(1) (1) Yes"))
 
 #When you decided to cut down or quit drinking, were you able to do so for at least one month?
-data_waves124$sud_losscontrol4 <- data_waves124$H4TO56 |>
+
+cx_met_lifetime <- skiplogic54 |>
+#  mutate(sud_losscontrol4 = fct_rev(H4TO56)) |>
+  filter(H4TO54 == 1)|>
+  as.numeric(sud_losscontrol4) 
+
+cx_met_lifetime$sud_losscontrol4 <- cx_met_lifetime$H4TO56 |>
   fct_rev() |>
   as.numeric() 
 
 #Have you ever continued to drink after you realized drinking was causing you any emotional problems (such as feeling irritable, depressed, or uninterested in things or having strange ideas) or causing you any health problems (such as ulcers, numbness in your hands/feet or memory problems)?
 
-data_waves124$sud_persistence1 <- as.numeric(data_waves124$H4TO59 == "(1) (1) Yes")
+cx_met_lifetime$sud_persistence1 <- as.numeric(cx_met_lifetime$H4TO59 == "(1) (1) Yes")
+
+cx_met_lifetime <- cx_met_lifetime |>
+  mutate(sud_persistence1 = as.numeric(cx_met_lifetime$H4TO59 == "(1) (1) Yes"))
 
 #Have you ever given up or cut down on important activities that would interfere with drinking like getting together with friends or relatives, going to work or school, participating in sports, or anything else?
 
-data_waves124$sud_persistence2 <- as.numeric(data_waves124$H4TO60 == "(1) (1) Yes")
+cx_met_lifetime$sud_persistence2 <- as.numeric(cx_met_lifetime$H4TO60 == "(1) (1) Yes")
 
 # Create composite domains with NAs replaced by 0 for calculation
 
-data_waves124 <- data_waves124 |>
+cx_met_lifetime <- cx_met_lifetime |>
   mutate(
-    sud_progression = replace_na(sud_progression1, 0) + replace_na(sud_progression2, 0) + replace_na(sud_progression3, 0),
-    sud_preoccupation = replace_na(sud_preoccupation1, 0) + replace_na(sud_preoccupation2, 0) + replace_na(sud_preoccupation3, 0),
-    sud_losscontrol = replace_na(sud_losscontrol1, 0) + replace_na(sud_losscontrol2, 0) + replace_na(sud_losscontrol3, 0) + replace_na(sud_losscontrol4, 0),
-    sud_persistence = replace_na(sud_persistence1, 0) + replace_na(sud_persistence2, 0)
+    sud_progression = sud_progression1 + sud_progression2 + sud_progression3,
+#    sud_preoccupation = sud_preoccupation1 + sud_preoccupation2 + sud_preoccupation3,
+#    sud_losscontrol = sud_losscontrol1 + sud_losscontrol2 + sud_losscontrol3 + sud_losscontrol4,
+    sud_persistence = sud_persistence1 + sud_persistence2
   )
 
 # Create composite drinking experiences
-data_waves124 <- data_waves124 |>
+cx_met_lifetime <- cx_met_lifetime |>
   mutate(
     drinking_exp = sud_progression + sud_preoccupation + sud_losscontrol + sud_persistence
   )
 
-data_waves124 <- data_waves124 |>
+cx_met_lifetime <- cx_met_lifetime |>
   mutate(substance_misuse = if_else(H4TO61 == "(1) (1) Yes" &
                                       H4TO62 >= 18, 1, 0))
 #here's where we could change the criteria - "drinking experiences >= 3" is what the study used as criteria to ask Q61, that could be replaced with other criteria and potentially leave out Q61
 
-data_waves124 <- data_waves124 |>
+cx_met_lifetime <- cx_met_lifetime |>
   mutate(
     substance_misuse_manual = if_else(
       drinking_exp >= 3 & H4TO61 == "(1) (1) Yes" & H4TO62 >= 18, 
       1,
       0))
 
-AUD_indicators <- data_waves124 |>
+AUD_indicators <- cx_met_lifetime |>
   select(AID,
          substance_misuse_manual,
          substance_misuse,
@@ -265,9 +289,6 @@ write_csv(x=addhealth_clean_and_composites,"addhealth_clean_and_composites")
 missing_AUD <- as.data.frame(which(is.na(AUD_indicators$sud_progression1)))
 count(missing_AUD)
 ```
-
-    ##      n
-    ## 1 2247
 
 #### [google sheet link :)](https://docs.google.com/spreadsheets/d/1Qvp9XRvgWT0kIqNywmpVKmovxEQQrm3WWV7K6oD7JFQ/edit?gid=0#gid=0)
 
