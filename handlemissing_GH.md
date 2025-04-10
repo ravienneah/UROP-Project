@@ -167,9 +167,7 @@ cx_met_lifetime <- cx_met_lifetime |>
   )
 
 cx_met_lifetime <- cx_met_lifetime |>
-  filter(early_life_alc_use == 1) |>
-  filter(early_life_heavy_drinking != 1) |>
-  mutate(if_else(early_life_alc_use == 1) & (early_life_heavy_drinking != 1)),
+  mutate(early_life_subst_use = if_else(early_life_alc_use == 1 & early_life_heavy_drinking != 1,1,0))
          
          
 ?if_else
