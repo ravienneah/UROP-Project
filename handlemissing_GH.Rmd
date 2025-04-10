@@ -92,13 +92,15 @@ skiplogic44 <- skiplogic43 |>
 malecriteria1_ask46 <- skiplogic35 |>
   filter(BIO_SEX4 == "(1) (1) Male") |>
   filter(past_year_alc_use > 4) |>
-  filter(H4TO36 > 3)
+  filter(H4TO36 > 3) |>
+  filter(!is.na(H4TO46))
 
 #Else if Q44 = 4, 5, 6, 7 and Q45 > 3, ask Q46. 
 malecriteria2_ask46 <- skiplogic44 |>
   filter(BIO_SEX4 == "(1) (1) Male") |>
   filter(former_alc_use > 3) |>
-  filter(H4TO45 > 3)
+  filter(H4TO45 > 3) |>
+  filter(!is.na(H4TO46))
 ```
 
 ```{r}
@@ -106,13 +108,15 @@ malecriteria2_ask46 <- skiplogic44 |>
 femalecriteria1_ask46 <- skiplogic35 |>
   filter(BIO_SEX4 == "(2) (2) Female") |>
   filter(past_year_alc_use > 4) |>
-  filter(H4TO36 > 2)
+  filter(H4TO36 > 2) |>
+  filter(!is.na(H4TO46))
 
 #Else if Q44 = 4, 5, 6, 7 and Q45 > 3, ask Q46. 
 femalecriteria2_ask46 <- skiplogic44 |>
   filter(BIO_SEX4 == "(2) (2) Female") |>
   filter(former_alc_use > 3) |>
-  filter(H4TO45 > 2)
+  filter(H4TO45 > 2) |>
+  filter(!is.na(H4TO46))
 
 all_AID <- data_waves124 |>
   select(AID)
@@ -128,7 +132,6 @@ female_cx_met_current <- left_join(all_AID, femalecriteria1_ask46, by = c("AID" 
 female_cx_met_former <- left_join(all_AID, femalecriteria2_ask46, by = c("AID" =
                                                                            "AID"))
 lifetime_cx_list <- list(
-  all_AID,
   male_cx_met_current,
   female_cx_met_current,
   male_cx_met_former,
@@ -138,6 +141,8 @@ lifetime_cx_list <- list(
 cx_met_lifetime <- lifetime_cx_list |>
   reduce(left_join, by = "AID", suffix = c("", "")) |>
   filter(!is.na(H4TO46))
+
+
 
 ```
 
