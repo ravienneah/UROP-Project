@@ -136,7 +136,10 @@ lifetime_cx_list <- list(
 
 cx_met_lifetime <- lifetime_cx_list |>
   reduce(left_join, by = "AID", suffix = c("", "")) |>
-  filter(!is.na(H4TO46))
+  filter(!is.na(H4TO46)) |>
+  select(AID,
+         H4TO46:H4TO61,
+        )
 ```
 
 ``` r
@@ -151,8 +154,6 @@ cx_met_lifetime <- lifetime_cx_list |>
 
 ``` r
 #early life substance use
-
-
 cx_met_lifetime <- cx_met_lifetime |>
   mutate(early_life_alc_use = (
     as.numeric(H1TO12 == "(1) (1) Yes")))
@@ -161,137 +162,131 @@ cx_met_lifetime <- cx_met_lifetime |>
 cx_met_lifetime <- cx_met_lifetime |>
   filter(early_life_alc_use == 1) |>
   mutate(
-    early_life_heavy_drinking = H1TO17 |>
-      fct_rev() |>   
-      as.numeric()
+    early_life_heavy_drinking = as.numeric(fct_rev(H1TO17))
   )
 
 cx_met_lifetime <- cx_met_lifetime |>
   mutate(early_life_subst_use = if_else(
     early_life_heavy_drinking >= 1,
     1,0))
-         
-         
-?if_else
-    early_life_subst_use = early_life_alc_use +
-           early_life_heavy_drinking)
+```
 
-table(cx_met_lifetime$early_life_heavy_drinking)
-summary(cx_met_lifetime$early_life_heavy_drinking)
-  
-#Have you ever found that you had to drink more than you used to in order to get the effect you wanted?
-cx_met_lifetime$sud_progression1 <- as.numeric(cx_met_lifetime$H4TO51 == "(1) (1) Yes")
-
-#During the first few hours of not drinking do you experience withdrawal symptoms such as the shakes, feeling anxious, trouble getting to sleep or staying asleep, nausea, vomiting, or rapid heartbeats?
-cx_met_lifetime$sud_progression2 <- as.numeric(cx_met_lifetime$H4TO58 == "(1) (1) Yes")
-
+``` r
 #How often has your drinking ever interfered with your responsibilities at work or school?
-cx_met_lifetime$sud_progression3 <- cx_met_lifetime$H4TO46 |>
-fct_collapse("(1) Once or more"= c("(1) (1) 1 time","(2) (2) More than 1 time"))
-cx_met_lifetime$sud_progression3 <-as.numeric(
-  cx_met_lifetime$sud_progression3=="(1) Once or more")
 
+cx_met_lifetime <- cx_met_lifetime |>
+  filter(!is.na(H4TO46)) |>
+  mutate(
+    sud_progression3 = as.numeric(
+      H4TO46 %in% c("(1) (1) 1 time", "(2) (2) More than 1 time")
+    )
+  )
+#How often have you been under the influence of alcohol when you could have gotten yourself or others hurt, or put yourself or others at risk, including unprotected sex?
+cx_met_lifetime <- cx_met_lifetime |>
+  mutate(
+    sud_preoccupation3 = as.numeric(
+    H4TO47 %in% c("(1) (1) 1 time", "(2) (2) More than 1 time")
+    )
+  )
 #How often have you had legal problems because of your drinking, like being arrested for disturbing the peace or driving under the influence of alcohol, or anything else?
-cx_met_lifetime$sud_preoccupation1 <- cx_met_lifetime$H4TO48 |>
-fct_collapse("(1) Once or more"= c("(1) (1) 1 time","(2) (2) More than 1 time"))
+cx_met_lifetime <- cx_met_lifetime |>
+  mutate(
+    sud_preoccupation1 = as.numeric(
+      H4TO48 %in% c("(1) (1) 1 time", "(2) (2) More than 1 time")
+    )
+  )
 
-cx_met_lifetime$sud_preoccupation1 <-as.numeric(
-  cx_met_lifetime$sud_preoccupation1=="(1) Once or more")
+#Have you ever found that you had to drink more than you used to in order to get the effect you wanted?
+cx_met_lifetime <- cx_met_lifetime |>
+  mutate(sud_progression1 = as.numeric(H4TO51 == "(1) (1) Yes"))
 
 #Has there ever been a period when you spent a lot of time drinking, planning how you would get alcohol, or recovering from a hangover?
-cx_met_lifetime$sud_preoccupation2 <- as.numeric(cx_met_lifetime$H4TO52 == "(1) (1) Yes")
-
-#How often have you been under the influence of alcohol when you could have gotten yourself or others hurt, or put yourself or others at risk, including unprotected sex?
-cx_met_lifetime$sud_preoccupation3 <- cx_met_lifetime$H4TO47 |>
-fct_collapse("(1) Once or more"= c("(1) (1) 1 time","(2) (2) More than 1 time"))
-
-cx_met_lifetime$sud_preoccupation3 <-as.numeric(
-  cx_met_lifetime$sud_preoccupation1=="(1) Once or more")
+cx_met_lifetime <- cx_met_lifetime |>
+  mutate(sud_preoccupation2 = as.numeric(H4TO52 == "(1) (1) Yes"))
 
 # Have you often had more to drink or kept drinking for a longer period of time than you intended?
-cx_met_lifetime$sud_losscontrol1 <- as.numeric(cx_met_lifetime$H4TO53 == "(1) (1) Yes")
+cx_met_lifetime <- cx_met_lifetime |>
+  mutate(sud_losscontrol1 = as.numeric(H4TO53 == "(1) (1) Yes"))
 
 #Have you ever tried to quit or cut down on your drinking?
 #If Q54 = 0, 6, 8, ask Q55, else if Q54 = 1, skip to Q56.
 
-skiplogic54 <- cx_met_lifetime |>
-  filter(!is.na(H4TO54)) |>
-  mutate(sud_losscontrol3 = as.numeric(H4TO54))
+#Has there ever been a period of time when you wanted to quit or cut down on your drinking? - 55
 
-#Has there ever been a period of time when you wanted to quit or cut down on your drinking?
+#When you decided to cut down or quit drinking, were you able to do so for at least one month? -56
 
-cx_met_lifetime <- skiplogic54 |>
-  filter(H4TO54 == 0) |>
-  mutate(sud_losscontrol2 = as.numeric(H4TO54 == "(1) (1) Yes"))
+cx_met_lifetime <- cx_met_lifetime %>%
+  mutate(
+    # Q54: Convert to numeric 0/1 (No/Yes), NA for other responses
+    sud_losscontrol3 = case_when(
+      H4TO54 == "(0) (0) No"   ~ 0,
+      H4TO54 == "(1) (1) Yes"  ~ 1,
+      TRUE                     ~ NA_real_  # Refused/Don't Know
+    ),
+    
+    # Q55: Asked ONLY if Q54 ≠ 1 (i.e., Q54 is 0/NA)
+    sud_losscontrol2 = if_else(
+      H4TO54 != "(1) (1) Yes",  # Condition: Q54 is 0 or NA
+      as.numeric(H4TO55 == "(1) (1) Yes"),  # Code 0/1 for Q55
+      NA_real_  # Skip if Q54 == 1
+    ),
+    
+    # Q56: Asked to EVERYONE (no skip logic)
+    sud_losscontrol4 = as.numeric(fct_rev(H4TO56))  # Direct conversion
+  )
 
-#When you decided to cut down or quit drinking, were you able to do so for at least one month?
-
-cx_met_lifetime <- skiplogic54 |>
-#  mutate(sud_losscontrol4 = fct_rev(H4TO56)) |>
-  filter(H4TO54 == 1)|>
-  as.numeric(sud_losscontrol4) 
-
-cx_met_lifetime$sud_losscontrol4 <- cx_met_lifetime$H4TO56 |>
-  fct_rev() |>
-  as.numeric() 
+#During the first few hours of not drinking do you experience withdrawal symptoms such as the shakes, feeling anxious, trouble getting to sleep or staying asleep, nausea, vomiting, or rapid heartbeats?
+  
+cx_met_lifetime <- cx_met_lifetime |>
+  mutate(sud_progression2 = as.numeric(H4TO58 == "(1) (1) Yes")) 
 
 #Have you ever continued to drink after you realized drinking was causing you any emotional problems (such as feeling irritable, depressed, or uninterested in things or having strange ideas) or causing you any health problems (such as ulcers, numbness in your hands/feet or memory problems)?
 
-cx_met_lifetime$sud_persistence1 <- as.numeric(cx_met_lifetime$H4TO59 == "(1) (1) Yes")
-
 cx_met_lifetime <- cx_met_lifetime |>
-  mutate(sud_persistence1 = as.numeric(cx_met_lifetime$H4TO59 == "(1) (1) Yes"))
+  mutate(sud_persistence1 = as.numeric(H4TO59 == "(1) (1) Yes"))
 
 #Have you ever given up or cut down on important activities that would interfere with drinking like getting together with friends or relatives, going to work or school, participating in sports, or anything else?
 
-cx_met_lifetime$sud_persistence2 <- as.numeric(cx_met_lifetime$H4TO60 == "(1) (1) Yes")
-
-# Create composite domains with NAs replaced by 0 for calculation
-
 cx_met_lifetime <- cx_met_lifetime |>
-  mutate(
-    sud_progression = sud_progression1 + sud_progression2 + sud_progression3,
-#    sud_preoccupation = sud_preoccupation1 + sud_preoccupation2 + sud_preoccupation3,
-#    sud_losscontrol = sud_losscontrol1 + sud_losscontrol2 + sud_losscontrol3 + sud_losscontrol4,
-    sud_persistence = sud_persistence1 + sud_persistence2
-  )
+  mutate(sud_persistence2 = as.numeric(H4TO60 == "(1) (1) Yes"))
+```
+
+cx_met_lifetime \<- cx_met_lifetime \|\> mutate( sud_progression =
+sud_progression1 + sud_progression2 + sud_progression3, \#
+sud_preoccupation = sud_preoccupation1 + sud_preoccupation2 +
+sud_preoccupation3, \# sud_losscontrol = sud_losscontrol1 +
+sud_losscontrol2 + sud_losscontrol3 + sud_losscontrol4, sud_persistence
+= sud_persistence1 + sud_persistence2 )
 
 # Create composite drinking experiences
-cx_met_lifetime <- cx_met_lifetime |>
-  mutate(
-    drinking_exp = sud_progression + sud_preoccupation + sud_losscontrol + sud_persistence
-  )
 
-cx_met_lifetime <- cx_met_lifetime |>
-  mutate(substance_misuse = if_else(H4TO61 == "(1) (1) Yes" &
-                                      H4TO62 >= 18, 1, 0))
-#here's where we could change the criteria - "drinking experiences >= 3" is what the study used as criteria to ask Q61, that could be replaced with other criteria and potentially leave out Q61
+cx_met_lifetime \<- cx_met_lifetime \|\> mutate( drinking_exp =
+sud_progression + sud_preoccupation + sud_losscontrol + sud_persistence
+)
 
-cx_met_lifetime <- cx_met_lifetime |>
-  mutate(
-    substance_misuse_manual = if_else(
-      drinking_exp >= 3 & H4TO61 == "(1) (1) Yes" & H4TO62 >= 18, 
-      1,
-      0))
+cx_met_lifetime \<- cx_met_lifetime \|\> mutate(substance_misuse =
+if_else(H4TO61 == “(1) (1) Yes” & H4TO62 \>= 18, 1, 0)) \#here’s where
+we could change the criteria - “drinking experiences \>= 3” is what the
+study used as criteria to ask Q61, that could be replaced with other
+criteria and potentially leave out Q61
 
-AUD_indicators <- cx_met_lifetime |>
-  select(AID,
-         substance_misuse_manual,
-         substance_misuse,
-         drinking_exp,
-         starts_with("sud"),
-         H4TO47:H4TO62,
-        )
-write_csv(x = AUD_indicators, file = "problematic_alcohol_misuse_addhealth.csv")
-```
+cx_met_lifetime \<- cx_met_lifetime \|\> mutate( substance_misuse_manual
+= if_else( drinking_exp \>= 3 & H4TO61 == “(1) (1) Yes” & H4TO62 \>= 18,
+1, 0))
 
-### Step 4: Check that the composites were created successfully
+AUD_indicators \<- cx_met_lifetime \|\> select(AID,
+substance_misuse_manual, substance_misuse, drinking_exp,
+starts_with(“sud”), H4TO47:H4TO62, ) write_csv(x = AUD_indicators, file
+= “problematic_alcohol_misuse_addhealth.csv”)
 
-``` r
-addhealth_clean_and_composites <- (data_waves124[, c(1, 27:60)])
-summary(addhealth_clean_and_composites)
-write_csv(x=addhealth_clean_and_composites,"addhealth_clean_and_composites")
-```
+
+    ### Step 4: Check that the composites were created successfully
+
+
+    ``` r
+    addhealth_clean_and_composites <- (data_waves124[, c(1, 27:60)])
+    summary(addhealth_clean_and_composites)
+    write_csv(x=addhealth_clean_and_composites,"addhealth_clean_and_composites")
 
 ## Missing Data handling
 
