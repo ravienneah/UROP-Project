@@ -204,6 +204,14 @@ cx_met_lifetime <- cx_met_lifetime |>
     )
   )
 
+#How often have you had problems with your family, friends, or people at work or school because of your drinking?
+cx_met_lifetime <- cx_met_lifetime |>
+  mutate(
+    sud_persistence3 = as.numeric(
+      H4TO49 %in% c("(1) (1) 1 time", "(2) (2) More than 1 time")
+    )
+  )
+
 #Have you ever found that you had to drink more than you used to in order to get the effect you wanted?
 cx_met_lifetime <- cx_met_lifetime |>
   mutate(sud_progression1 = as.numeric(H4TO51 == "(1) (1) Yes"))
@@ -266,7 +274,7 @@ cx_met_lifetime <- cx_met_lifetime |>
     sud_progression = sud_progression1 + sud_progression2 + sud_progression3,
     sud_preoccupation = sud_preoccupation1 + sud_preoccupation2 + sud_preoccupation3,
     sud_losscontrol = sud_losscontrol1 + sud_losscontrol2 + sud_losscontrol3 + sud_losscontrol4,
-    sud_persistence = sud_persistence1 + sud_persistence2
+    sud_persistence = sud_persistence1 + sud_persistence2 + sud_persistence3
   )
   
 
@@ -276,7 +284,7 @@ cx_met_lifetime <- cx_met_lifetime |>
     sud_progression = sud_progression1 + sud_progression2 + sud_progression3,
    sud_preoccupation = sud_preoccupation1 + sud_preoccupation2 + sud_preoccupation3,
    sud_losscontrol = sud_losscontrol1 + sud_losscontrol2 + sud_losscontrol3 + sud_losscontrol4,
-    sud_persistence = sud_persistence1 + sud_persistence2
+    sud_persistence = sud_persistence1 + sud_persistence2 + sud_persistence3
   )
 
 # Create composite drinking experiences
@@ -325,6 +333,7 @@ cx_met_lifetime <- cx_met_lifetime %>%
   filter(
     !is.na(H4TO46),   # Q46
     !is.na(H4TO47),   # Q47
+    !is.na(H4TO49),   # Q49
     !is.na(H4TO51),   # Q51
     !is.na(H4TO52),   # Q52
     !is.na(H4TO53),   # Q53
